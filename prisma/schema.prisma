@@ -1,0 +1,48 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// 这就是你的核心表：Post
+enum PostCategory {
+  MOMENT
+  BOOK_MOVIE
+  TRAVEL
+}
+
+model Post {
+  id        Int      @id @default(autoincrement()) // 唯一编号，自动增加
+  title     String?  // 标题（加了 ? 代表是可选的，碎碎念不需要标题）
+  content   String   // 内容主体
+  category  PostCategory // 分类：MOMENT(碎碎念), BOOK_MOVIE(书影), TRAVEL(行走)
+  imageUrl  String?  // 图片链接（可选）
+  eventDate DateTime @default(now())             // 保存日期（可设置），默认当前时间
+  createdAt DateTime @default(now())             // 创建时间，自动生成当前时间
+
+  tags      PostTag[]
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  posts     PostTag[]
+}
+
+model PostTag {
+  postId Int
+  tagId  Int
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+}
